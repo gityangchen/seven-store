@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>app</title>
+  </head>
+  <body class="body-my">
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
+<style>
+    .body-my {
+        background-image: url('/statues/img.png');
+        background-size: contain; /* 图片按比例缩放以完全适应容器 */
+        background-repeat: repeat; /* 缺的地方重新平铺 */
+        background-position: center; /* 图片居中 */
+        overflow: hidden; /* 防止内容溢出显示 */
+    }
+</style>
