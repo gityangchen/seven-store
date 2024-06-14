@@ -1,0 +1,50 @@
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+@RestController
+public class PrizeController {
+
+    @Autowired
+    private PrizeService prizeService;
+
+    @GetMapping("/check")
+    public Long check(@RequestParam List<Long> ids) {
+        List<Prize> prizes = prizeService.getPrizesByIds(ids);
+        Map<Long, Double> probabilities = getProbabilities(prizes);
+        Map<Long, Double> normalizedProbabilities = normalizeProbabilities(probabilities);
+        return selectPrizeBasedOnProbability(normalizedProbabilities);
+    }
+
+    private Map<Long, Double> getProbabilities(List<Prize> prizes) {
+        return prizes.stream()
+                .filter(prize -> !prize.getDisabled()) // 过滤掉被禁用的奖品
+                .collect(Collectors.toMap(Prize::getId, Prize::getProbability));
+    }
+
+    private Map<Long, Double> normalizeProbabilities(Map<Long, Double> probabilities) {
+        double totalProbability = probabilities.values().stream().mapToDouble(Double::doubleValue).sum();
+        Map<Long, Double> normalizedProbabilities = new HashMap<>();
+        for (Map.Entry<Long, Double> entry : probabilities.entrySet()) {
+            normalizedProbabilities.put(entry.getKey(), entry.getValue() / totalProbability);
+        }
+        return normalizedProbabilities;
+    }
+
+    private Long selectPrizeBasedOnProbability(Map<Long, Double> probabilities) {
+        double randomValue = new Random().nextDouble();
+
+        double cumulativeProbability = 0.0;
+        for (Map.Entry<Long, Double> entry : probabilities.entrySet()) {
+            cumulativeProbability += entry.getValue();
+            if (randomValue <= cumulativeProbability) {
+                return entry.getKey();
+            }
+        }
+        throw new RuntimeException("Failed to select a prize based on probability.");
+    }
+}
